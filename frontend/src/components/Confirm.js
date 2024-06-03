@@ -12,7 +12,7 @@ const Confirm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://http://54.207.54.15/:3001/auth/confirm', {
+      const response = await axios.post('http://http://54.207.54.15:3001/auth/confirm', {
         username,
         code,
       });

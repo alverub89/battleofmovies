@@ -18,7 +18,7 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://54.207.54.15/:3001/auth/confirm-password', {
+      await axios.post('http://54.207.54.15:3001/auth/confirm-password', {
         username,
         code,
         newPassword,
