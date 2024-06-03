@@ -1,10 +1,19 @@
+require('dotenv').config(); // Carrega as variáveis de ambiente
+
 const { SecretsManagerClient, GetSecretValueCommand } = require('@aws-sdk/client-secrets-manager');
 const AWS = require('aws-sdk');
 
 // Função para obter segredos do Secrets Manager
 async function getSecret() {
-  const client = new SecretsManagerClient({ region: 'sa-east-1' });
-  const command = new GetSecretValueCommand({ SecretId: 'arn:aws:secretsmanager:sa-east-1:922810227889:secret:battleofmovies_cognito-Iu4Cmv' });
+  const client = new SecretsManagerClient({ 
+    region: process.env.AWS_REGION,
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  });
+
+  const command = new GetSecretValueCommand({ SecretId: process.env.SECRET_ID });
 
   try {
     const data = await client.send(command);

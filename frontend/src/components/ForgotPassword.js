@@ -10,7 +10,7 @@ const ForgotPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3001/auth/forgot-password', { username });
+      await axios.post('http://54.207.54.15/:3001/auth/forgot-password', { username });
       setMessage('Código de redefinição de senha enviado com sucesso. Verifique seu email.');
       navigate('/reset-password', { state: { username } }); // Redirecionar para a tela de redefinição de senha
     } catch (error) {

@@ -1,5 +1,3 @@
-// src/components/Login.js
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -16,7 +14,7 @@ const Login = () => {
     e.preventDefault();
     console.log('Login form submitted:', { username, password });
     try {
-      const response = await axios.post('http://localhost:3001/auth/login', { // Verifique a URL
+      const response = await axios.post('http://54.207.54.15:3001/auth/login', { // Atualize a URL
         username,
         password,
       });
