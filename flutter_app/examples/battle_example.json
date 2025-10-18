@@ -1,0 +1,43 @@
+{
+  "comparacao": {
+    "filmes": [
+      {
+        "titulo": "Marvel's The Avengers",
+        "notas": {
+          "imdb": 8.0,
+          "rotten_tomatoes": 91,
+          "adoro_cinema": null,
+          "metacritic": null
+        },
+        "orcamento": 220000000,
+        "bilheteria": 1515000000,
+        "premios": {
+          "oscar": 1,
+          "outros": 0
+        },
+        "score_final": 90.6
+      },
+      {
+        "titulo": "Avengers: Age of Ultron",
+        "notas": {
+          "imdb": 7.3,
+          "rotten_tomatoes": 75,
+          "adoro_cinema": null,
+          "metacritic": null
+        },
+        "orcamento": 365000000,
+        "bilheteria": 1405000000,
+        "premios": {
+          "oscar": 0,
+          "outros": 1
+        },
+        "score_final": 83.8
+      }
+    ],
+    "vencedor": {
+      "titulo": "Marvel's The Avengers",
+      "score": 90.6
+    },
+    "analise": "Embora ambos os filmes sejam marcos de entretenimento, \"Marvel's The Avengers\" sobressai por ter uma reação crítica mais entusiasmada e um retorno sobre orçamento mais eficiente, garantindo a vitória neste duelo cinematográfico."
+  }
+}
