@@ -2,6 +2,13 @@
 
 Uma aplicação Flutter para comparação de filmes através de batalhas épicas.
 
+## 📚 Documentação
+
+- **[README.md](README.md)** - Esta página (visão geral)
+- **[USAGE.md](USAGE.md)** - Guia detalhado de uso e integração
+- **[DEVELOPMENT.md](DEVELOPMENT.md)** - Documentação técnica e padrões
+- **[examples/](examples/)** - Exemplos de JSON para testes
+
 ## 📱 Telas
 
 ### 1. Tela de Seleção de Filmes (Movie Selection Screen)
@@ -127,3 +134,50 @@ Para integração com o backend:
 - Os dados podem ser facilmente substituídos por chamadas reais à API
 - O design segue as referências visuais fornecidas
 - Todas as cores e estilos foram implementados conforme as imagens de exemplo
+
+## 🧪 Testes
+
+Execute os testes com:
+
+```bash
+# Todos os testes
+flutter test
+
+# Testes de modelo
+flutter test test/models/
+
+# Testes de widget
+flutter test test/widget_test.dart
+```
+
+## 🎨 Screenshots
+
+### Tela de Seleção de Filmes
+![Movie Selection Screen](https://github.com/user-attachments/assets/78018a00-27df-44a3-8220-33c693562b3b)
+
+### Tela de Resultado da Batalha
+![Battle Result Screen](https://github.com/user-attachments/assets/1eabcf2f-69d0-4dd3-bc4a-76f141a1d485)
+
+## 📦 Dependências
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+```
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+Consulte [DEVELOPMENT.md](DEVELOPMENT.md) para padrões de código e boas práticas.
