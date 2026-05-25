@@ -1,7 +1,7 @@
 [build]
-  publish = "."
+  publish = "build"
   functions = "netlify/functions"
-  command = ""
+  command = "mkdir -p build/01-sem-espec && cp 1_sem_espec/index.html 1_sem_espec/style.css 1_sem_espec/app.js build/01-sem-espec/"
 
 # --- 01-sem-espec ---
 [[redirects]]
