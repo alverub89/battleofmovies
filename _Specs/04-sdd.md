@@ -13,14 +13,23 @@
 > Decisões permanentes do projeto. O agente não pode contradizer nenhuma delas.
 
 ```
-STACK: Netlify Functions + Neon (PostgreSQL serverless) + Node.js + TypeScript
-ISOLAMENTO: toda implementação em /battle-of-movies — nada fora dessa pasta
-BANCO: queries SQL diretas ao Neon — sem ORM
+DEPLOY: Netlify — toda a feature é servida como Netlify Function
+        A URL base é o site onde está deployado + "/4_SDD"
+        Exemplo: https://battle-of-movies.netlify.app/4_SDD
+
+ISOLAMENTO: toda implementação em /04_SDD — nada fora dessa pasta
+            nada é criado, modificado ou removido na raiz do projeto
+
+DADOS: a conexão com o banco vem exclusivamente da variável de ambiente DATA_URL
+       o agente não acessa, lê ou infere schema de nenhuma outra fonte
+       o schema das tabelas está em dataBase.md na raiz — leia antes de implementar
+
+BANCO: queries SQL diretas — sem ORM
 SEGURANÇA: queries sempre parametrizadas — sem interpolação de string em SQL
 TIPAGEM: TypeScript strict — sem any explícito
 ADULTOS: filmes com isAdult = 1 nunca aparecem em nenhum resultado
 TIPO: apenas titleType = 'movie' nos resultados — sem série, episódio ou short
-ERROS: sempre estruturados em JSON com campo error, message e status
+ERROS: sempre estruturados em JSON com campos error, message e status
 LOGS: estruturados em JSON — sem console.log solto em produção
 AMBIENTE: variáveis via process.env com validação no startup
 ```
@@ -39,18 +48,51 @@ O Battle of Movies precisa de um endpoint que receba uma query em linguagem
 natural e retorne filmes relevantes da base IMDb ranqueados por relevância
 semântica e qualidade.
 
+### Pré-requisito obrigatório
+
+Antes de escrever qualquer linha de código, o agente deve ler `dataBase.md`
+na raiz do projeto. Esse arquivo contém o schema completo das tabelas
+disponíveis no banco apontado por `DATA_URL`. O agente não deve inferir,
+assumir ou inventar schema — tudo que não estiver em `dataBase.md` não existe.
+
 ### Escopo
 
 **O que muda:**
-- Criação do endpoint `/api/search`
-- Criação do endpoint `/api/search/health`
-- Script de ingestão da base IMDb no Neon
-- View desnormalizada `movies_search` para a camada de busca
+- Criação de toda a implementação dentro de `/04_SDD`
+- Endpoint de busca acessível em `[SITE_URL]/4_SDD/search`
+- Endpoint de health check acessível em `[SITE_URL]/4_SDD/health`
 
 **O que não muda:**
-- Nenhum arquivo fora de `/battle-of-movies`
-- Nenhuma tabela além de `title_basics`, `title_ratings` e `title_akas`
+- Nenhum arquivo fora de `/04_SDD`
+- Nada na raiz do projeto
+- Nenhuma leitura de schema além do `dataBase.md`
 - Nenhuma chamada externa para dados de filmes
+
+### Estrutura da pasta
+
+```
+/04_SDD
+  /api
+    search.ts       → Netlify Function — busca inteligente
+    health.ts       → Netlify Function — health check
+  /lib
+    query-parser.ts → interpreta a query, extrai intenções
+    search.ts       → executa busca no banco via DATA_URL
+    ranker.ts       → calcula relevanceScore e ordena
+    db.ts           → conexão com o banco — singleton com pool
+    validators.ts   → valida parâmetros de entrada
+    types.ts        → tipos TypeScript compartilhados
+  /scripts
+    setup-db.js     → cria índices e view necessários
+  package.json
+  tsconfig.json
+  .env.example
+  README.md
+```
+
+> ⚠️ Netlify exige que as Functions estejam em `/04_SDD/api` e que o
+> `netlify.toml` dentro de `/04_SDD` aponte o functions directory correto.
+> O agente deve criar esse `netlify.toml` dentro de `/04_SDD`.
 
 ### User Stories (notação EARS)
 
@@ -61,8 +103,8 @@ ordenados por relevância semântica decrescente combinada com qualidade IMDb
 
 **US-02 — Busca em português**
 WHEN o usuário submete uma query com termos em português
-THE SYSTEM SHALL considerar títulos da tabela `title_akas`
-com `region IN ('BR', 'PT')` antes de buscar por `primary_title`
+THE SYSTEM SHALL considerar títulos alternativos em português disponíveis
+no banco conforme schema em `dataBase.md`
 
 **US-03 — Query ambígua**
 WHEN o usuário submete uma query de baixa especificidade
@@ -74,9 +116,8 @@ WHEN o usuário submete uma query em branco ou ausente
 THE SYSTEM SHALL retornar HTTP 400 com erro `INVALID_QUERY`
 
 **US-05 — Sem resultados**
-WHEN a query não encontra filmes correspondentes na base
-THE SYSTEM SHALL retornar HTTP 200 com lista vazia
-e nunca retornar HTTP 404
+WHEN a query não encontra filmes correspondentes
+THE SYSTEM SHALL retornar HTTP 200 com lista vazia — nunca HTTP 404
 
 **US-06 — Paginação**
 WHEN o usuário submete uma query sem parâmetro de página
@@ -122,7 +163,7 @@ Erros retornam:
 - `status` (integer) — HTTP status code
 
 **CA-05 — Health check**
-`GET /api/search/health` retorna:
+`GET [SITE_URL]/4_SDD/health` retorna:
 - `status`: `"ok"` | `"degraded"`
 - `database`: `"connected"` | `"unreachable"`
 - `latency_ms` (integer, nullable)
@@ -131,105 +172,126 @@ Erros retornam:
 
 ## plan.md
 
+### Pré-requisito
+
+Ler `dataBase.md` na raiz antes de qualquer decisão de implementação.
+O schema das queries, joins e filtros deve ser derivado exclusivamente desse arquivo.
+
 ### Arquitetura
 
 ```
 Query do usuário
       ↓
-Netlify Function (/api/search)
+Netlify Function — [SITE_URL]/4_SDD/search
       ↓
-lib/query-parser.ts     ← interpreta a query, extrai intenções
+lib/validators.ts     ← valida parâmetros de entrada
       ↓
-lib/search.ts           ← monta e executa a query SQL no Neon
+lib/query-parser.ts   ← interpreta a query, extrai intenções
       ↓
-lib/ranker.ts           ← calcula relevanceScore e ordena
+lib/search.ts         ← executa query SQL via DATA_URL
+      ↓
+lib/ranker.ts         ← calcula relevanceScore e ordena
       ↓
 Resposta JSON paginada
 ```
 
-### Decisões técnicas
+### Configuração Netlify
 
-**Interpretação da query**
-A query é processada em `lib/query-parser.ts` antes de chegar ao banco.
-O parser extrai: gênero provável, década, atributos qualitativos (ex:
-"triste", "assustador", "inspirador") e termos em português para lookup
-em `title_akas`.
+O arquivo `/04_SDD/netlify.toml` deve conter:
 
-**Busca no banco**
-`lib/search.ts` consulta a view `movies_search` usando `pg_trgm` para
-similaridade textual e filtros SQL derivados do parser. Sem full-text
-search externo — tudo dentro do Neon.
+```toml
+[build]
+  functions = "api"
+  publish = "public"
 
-**Ranqueamento**
-`lib/ranker.ts` combina relevância semântica (0.0–1.0) com score de
-qualidade calculado como:
+[[redirects]]
+  from = "/4_SDD/search"
+  to = "/.netlify/functions/search"
+  status = 200
+
+[[redirects]]
+  from = "/4_SDD/health"
+  to = "/.netlify/functions/health"
+  status = 200
+```
+
+### Conexão com o banco
+
+A conexão usa exclusivamente `DATA_URL`:
+
+```typescript
+// lib/db.ts
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  connectionString: process.env.DATA_URL,
+  ssl: { rejectUnauthorized: false } // obrigatório para Neon
+});
+```
+
+> ⚠️ O parâmetro `ssl: { rejectUnauthorized: false }` é obrigatório para
+> conexões com o Neon via Netlify Functions. Sem ele a conexão falha silenciosamente.
+
+### Ranqueamento
+
 ```
 quality_score = average_rating × log10(num_votes + 1) / 10
 relevance_score final = 0.7 × semantic + 0.3 × quality
 ```
 
-**Paginação**
+### Paginação
+
 `LIMIT` e `OFFSET` no SQL. Total calculado em query separada com `COUNT(*)`.
-
-### Módulos a criar
-
-| Arquivo | Responsabilidade |
-|---|---|
-| `/api/search.ts` | Netlify Function — recebe request, valida, chama lib, retorna response |
-| `/api/search/health.ts` | Netlify Function — testa conexão com Neon |
-| `/lib/query-parser.ts` | Extrai intenções da query em linguagem natural |
-| `/lib/search.ts` | Executa busca no Neon via `movies_search` |
-| `/lib/ranker.ts` | Calcula `relevanceScore` e ordena resultados |
-| `/lib/db.ts` | Conexão com Neon — singleton com pool |
-| `/lib/validators.ts` | Valida parâmetros de entrada |
-| `/lib/types.ts` | Tipos TypeScript compartilhados |
-| `/scripts/ingest.js` | Lê TSVs e popula `title_basics`, `title_ratings`, `title_akas` |
-| `/scripts/setup-db.js` | Cria tabelas, índices, extensão `pg_trgm` e view `movies_search` |
 
 ---
 
 ## tasks.md
 
-### FASE 1 — Banco de dados
+### FASE 1 — Leitura obrigatória
 
-- [ ] T01 Habilitar extensão `pg_trgm` no Neon
-- [ ] T02 Criar tabela `title_basics` com índices
-- [ ] T03 Criar tabela `title_ratings` com índices
-- [ ] T04 Criar tabela `title_akas` com índices
-- [ ] T05 Criar view `movies_search`
-- [ ] T06 Escrever script `scripts/setup-db.js` executando T01–T05
-- [ ] T07 Escrever script `scripts/ingest.js` para `title_basics`
-        — filtrar `titleType = 'movie'` e `isAdult = 0`
-        — converter `\N` para `NULL`
-- [ ] T08 Escrever script `scripts/ingest.js` para `title_ratings`
-- [ ] T09 Escrever script `scripts/ingest.js` para `title_akas`
-        — filtrar `region IN ('BR', 'PT', 'US', 'GB')` + `is_original_title`
-- [ ] T10 Validar ingestão — contar registros e verificar integridade
+- [ ] T01 Ler `dataBase.md` na raiz do projeto
+- [ ] T02 Mapear as tabelas e colunas disponíveis para a feature de busca
+- [ ] T03 Identificar a coluna de títulos alternativos em português (se existir)
+- [ ] T04 Confirmar os nomes exatos das colunas antes de escrever qualquer query
 
-### FASE 2 — Camada de dados
+### FASE 2 — Setup do projeto
 
-- [ ] T11 Criar `lib/types.ts` com interfaces `Movie`, `SearchResponse`, `ErrorResponse`, `HealthResponse`
-- [ ] T12 Criar `lib/db.ts` com singleton de conexão ao Neon
-- [ ] T13 Criar `lib/validators.ts` validando `q`, `page`, `limit`, `min_rating`, `min_votes`
-- [ ] T14 Criar `lib/query-parser.ts` extraindo gênero, década e atributos qualitativos
-- [ ] T15 Criar `lib/search.ts` consultando `movies_search` com filtros derivados do parser
-- [ ] T16 Criar `lib/ranker.ts` calculando `relevanceScore` e ordenando resultados
+- [ ] T05 Criar `/04_SDD/package.json` com dependências isoladas
+- [ ] T06 Criar `/04_SDD/tsconfig.json` com `strict: true`
+- [ ] T07 Criar `/04_SDD/.env.example` com `DATA_URL` e `NODE_ENV`
+- [ ] T08 Criar `/04_SDD/netlify.toml` com redirects para `/4_SDD/search` e `/4_SDD/health`
+- [ ] T09 Criar `/04_SDD/scripts/setup-db.js` criando índices e view necessários
+        usando `DATA_URL` — sem criar tabelas (schema já existe)
 
-### FASE 3 — API
+### FASE 3 — Camada de dados
 
-- [ ] T17 Criar `api/search.ts` validando parâmetros via `validators.ts`
-- [ ] T18 Integrar `query-parser` + `search` + `ranker` no fluxo do endpoint
-- [ ] T19 Implementar paginação com `LIMIT`/`OFFSET` e `COUNT(*)`
-- [ ] T20 Implementar respostas de erro estruturadas (400, 500)
-- [ ] T21 Criar `api/search/health.ts` testando conexão com Neon
-- [ ] T22 Criar `.env.example` com `DATABASE_URL` e `NODE_ENV`
+- [ ] T10 Criar `/04_SDD/lib/types.ts` com interfaces `Movie`, `SearchResponse`,
+          `ErrorResponse`, `HealthResponse`
+- [ ] T11 Criar `/04_SDD/lib/db.ts` com singleton de conexão via `DATA_URL`
+          incluindo `ssl: { rejectUnauthorized: false }`
+- [ ] T12 Criar `/04_SDD/lib/validators.ts` validando `q`, `page`, `limit`,
+          `min_rating`, `min_votes`
+- [ ] T13 Criar `/04_SDD/lib/query-parser.ts` extraindo gênero, década
+          e atributos qualitativos da query
+- [ ] T14 Criar `/04_SDD/lib/search.ts` com queries derivadas do schema em `dataBase.md`
+- [ ] T15 Criar `/04_SDD/lib/ranker.ts` calculando `relevanceScore`
 
-### FASE 4 — Validação
+### FASE 4 — API
 
-- [ ] T23 Testar US-02: query em português retorna resultados relevantes
-- [ ] T24 Testar US-04: query vazia retorna HTTP 400
-- [ ] T25 Testar US-05: query sem resultado retorna HTTP 200 com lista vazia
-- [ ] T26 Testar CA-02: filmes com `isAdult = 1` não aparecem
-- [ ] T27 Testar CA-07: resposta em menos de 2 segundos
-- [ ] T28 Testar CA-05: health check confirma conexão com Neon
-- [ ] T29 Documentar setup e deploy no README
+- [ ] T16 Criar `/04_SDD/api/search.ts` como Netlify Function
+- [ ] T17 Integrar `validators` + `query-parser` + `search` + `ranker`
+- [ ] T18 Implementar paginação com `LIMIT`/`OFFSET` e `COUNT(*)`
+- [ ] T19 Implementar respostas de erro estruturadas (400, 500)
+- [ ] T20 Criar `/04_SDD/api/health.ts` testando conexão via `DATA_URL`
+
+### FASE 5 — Validação
+
+- [ ] T21 Confirmar que a URL `/4_SDD/search?q=` responde após deploy no Netlify
+- [ ] T22 Confirmar que `/4_SDD/health` retorna `status: ok`
+- [ ] T23 Testar query em português
+- [ ] T24 Testar query vazia → HTTP 400
+- [ ] T25 Testar query sem resultado → HTTP 200 com lista vazia
+- [ ] T26 Confirmar que filmes com `isAdult = 1` não aparecem
+- [ ] T27 Confirmar resposta em menos de 2 segundos
+- [ ] T28 Confirmar que nenhum arquivo foi criado fora de `/04_SDD`
+- [ ] T29 Documentar setup, variáveis de ambiente e deploy no `/04_SDD/README.md`

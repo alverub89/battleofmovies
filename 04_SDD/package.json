@@ -1,0 +1,19 @@
+{
+  "name": "battle-of-movies-4-sdd",
+  "version": "1.0.0",
+  "description": "Battle of Movies — Fase 4 (SDD): busca por linguagem natural com TypeScript",
+  "private": true,
+  "scripts": {
+    "build": "esbuild api/search.ts api/health.ts --bundle --platform=node --target=node18 --format=cjs --external:pg --outdir=.dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pg": "^8.13.3"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^2.8.1",
+    "@types/pg": "^8.11.10",
+    "esbuild": "^0.23.1",
+    "typescript": "^5.4.5"
+  }
+}
