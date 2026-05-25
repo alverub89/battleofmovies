@@ -4,8 +4,10 @@
 
 const { Pool } = require("pg");
 
+const connectionString = process.env.DATA_URL || process.env.DATABASE_URL;
+
 const pool = new Pool({
-  connectionString: process.env.DATA_URL,
+  connectionString,
   max: 1,
   ssl: { rejectUnauthorized: false },
 });
@@ -229,11 +231,11 @@ exports.handler = async (event) => {
     };
   }
 
-  if (!process.env.DATA_URL) {
+  if (!connectionString) {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: "Variável de ambiente DATA_URL não configurada." }),
+      body: JSON.stringify({ error: "Variável de ambiente DATA_URL ou DATABASE_URL não configurada." }),
     };
   }
 
