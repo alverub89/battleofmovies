@@ -1,6 +1,6 @@
 [build]
   publish = "build"
-  command = "mkdir -p netlify/functions && cp 1_sem_espec/functions/search-01.js 2_PRD/functions/search-02.js netlify/functions/ && cp 1_sem_espec/functions/package.json netlify/functions/ && npm --prefix netlify/functions install && mkdir -p build/01-sem-espec && cp 1_sem_espec/index.html 1_sem_espec/style.css 1_sem_espec/app.js build/01-sem-espec/ && mkdir -p build/2_PRD && cp 2_PRD/index.html 2_PRD/style.css 2_PRD/app.js build/2_PRD/"
+  command = "mkdir -p netlify/functions && cp 1_sem_espec/functions/search-01.js 2_PRD/functions/search-02.js 3_BDD/functions/search-03.js netlify/functions/ && cp 3_BDD/functions/package.json netlify/functions/ && npm --prefix netlify/functions install && mkdir -p build/01-sem-espec && cp 1_sem_espec/index.html 1_sem_espec/style.css 1_sem_espec/app.js build/01-sem-espec/ && mkdir -p build/2_PRD && cp 2_PRD/index.html 2_PRD/style.css 2_PRD/app.js build/2_PRD/ && mkdir -p build/3_BDD && cp 3_BDD/index.html 3_BDD/style.css 3_BDD/app.js build/3_BDD/"
 
 # --- 01-sem-espec ---
 [[redirects]]
@@ -12,6 +12,12 @@
 [[redirects]]
   from   = "/2_PRD/api/search"
   to     = "/.netlify/functions/search-02"
+  status = 200
+
+# --- 03-bdd ---
+[[redirects]]
+  from   = "/3_BDD/api/search"
+  to     = "/.netlify/functions/search-03"
   status = 200
 
 [[headers]]
