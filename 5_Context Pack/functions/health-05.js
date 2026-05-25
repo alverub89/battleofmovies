@@ -7,8 +7,8 @@ let pool = null;
 
 function getPool() {
   if (pool) return pool;
-  const url = process.env.data_url;
-  if (!url) throw new Error('data_url environment variable is not set');
+  const url = process.env.DATA_URL;
+  if (!url) throw new Error('DATA_URL environment variable is not set');
   pool = new Pool({
     connectionString: url,
     ssl: { rejectUnauthorized: false },
