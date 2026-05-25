@@ -11,7 +11,7 @@ function getPool() {
   if (!url) throw new Error('DATABASE_URL environment variable is not set');
   pool = new Pool({
     connectionString: url,
-    ssl: { rejectUnauthorized: false },
+    ssl: true,
     max: 3,
     idleTimeoutMillis: 10000,
     connectionTimeoutMillis: 5000,
@@ -315,9 +315,9 @@ exports.handler = async function handler(event) {
       INNER JOIN title_ratings r ON b.tconst = r.tconst
       WHERE r.num_votes          >= $1
         AND ($2::text[]  IS NULL OR b.genres      && $2::text[])
-        AND ($3::integer IS NULL OR b.start_year  >= $3)
-        AND ($4::integer IS NULL OR b.start_year  <= $4)
-        AND ($5::numeric IS NULL OR r.average_rating >= $5)
+        AND ($3          IS NULL OR b.start_year  >= CAST($3 AS smallint))
+        AND ($4          IS NULL OR b.start_year  <= CAST($4 AS smallint))
+        AND ($5          IS NULL OR r.average_rating >= CAST($5 AS numeric))
     `;
 
     const baseParams = [minVotes, genres, startYear, endYear, minRating];
@@ -383,16 +383,16 @@ exports.handler = async function handler(event) {
       }),
     };
   } catch (err) {
-    // Log structured error without leaking details to client
     const message = err instanceof Error ? err.message : String(err);
-    console.error(JSON.stringify({ event: 'search_error', message }));
+    const stack   = err instanceof Error ? err.stack   : undefined;
+    console.error(JSON.stringify({ event: 'search_error', message, stack }));
 
     return {
       statusCode: 500,
       headers: RESPONSE_HEADERS,
       body: JSON.stringify({
         error:   'INTERNAL_ERROR',
-        message: 'Erro interno no servidor.',
+        message,   // temporary: exposes real error for debugging
         status:  500,
       }),
     };
