@@ -1,9 +1,0 @@
-{
-  "name": "battleofmovies",
-  "version": "1.0.0",
-  "description": "Battle of Movies — Intelligent IMDb search implementations",
-  "private": true,
-  "dependencies": {
-    "pg": "^8.13.3"
-  }
-}

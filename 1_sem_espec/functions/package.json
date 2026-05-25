@@ -1,0 +1,9 @@
+{
+  "name": "battleofmovies-1-sem-espec-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions para a implementação 01 · Sem Spec — Busca Inteligente de Filmes",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.13.3"
+  }
+}
