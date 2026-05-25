@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Battle of Movies — Busca com PRD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-inner">
+        <span class="logo">🎬 Battle of Movies</span>
+        <span class="badge">02 · PRD</span>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="hero">
+        <h1 class="hero-title">Busca inteligente de filmes</h1>
+        <p class="hero-sub">
+          Descreva o que quer assistir em português — sem filtros, sem menus, só palavras.
+        </p>
+
+        <form class="search-form" id="searchForm" role="search" autocomplete="off">
+          <div class="search-wrap">
+            <input
+              class="search-input"
+              id="searchInput"
+              type="search"
+              name="q"
+              placeholder="Ex: filme de terror psicológico dos anos 90…"
+              maxlength="500"
+              aria-label="Buscar filmes"
+              spellcheck="false"
+            />
+            <button class="search-btn" type="submit" aria-label="Buscar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </div>
+          <div class="suggestions" id="suggestions" aria-label="Sugestões de busca">
+            <button class="chip" type="button" data-q="terror psicológico anos 90">terror psicológico anos 90</button>
+            <button class="chip" type="button" data-q="comédia romântica anos 2000">comédia romântica anos 2000</button>
+            <button class="chip" type="button" data-q="ficção científica espacial">ficção científica espacial</button>
+            <button class="chip" type="button" data-q="filme para chorar drama">filme para chorar</button>
+            <button class="chip" type="button" data-q="animação infantil família">animação infantil</button>
+            <button class="chip" type="button" data-q="drama de guerra clássico">drama de guerra clássico</button>
+            <button class="chip" type="button" data-q="thriller adrenalina recente">thriller adrenalina recente</button>
+            <button class="chip" type="button" data-q="inspirador superação biografia">inspirador superação</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="results-section" id="resultsSection" aria-live="polite">
+        <div id="loadingState" class="state state--loading" hidden>
+          <div class="spinner" role="status">
+            <span class="sr-only">Buscando filmes…</span>
+          </div>
+          <p>Buscando filmes…</p>
+        </div>
+
+        <div id="emptyState" class="state state--empty" hidden>
+          <span class="state-icon">🎭</span>
+          <p>Nenhum filme encontrado para essa busca.</p>
+          <p class="state-hint">Tente palavras diferentes, como "ação anos 80" ou "comédia romântica".</p>
+        </div>
+
+        <div id="errorState" class="state state--error" hidden>
+          <span class="state-icon">⚠️</span>
+          <p id="errorMsg">Ocorreu um erro ao buscar filmes.</p>
+        </div>
+
+        <div id="parsedInfo" class="parsed-info" hidden></div>
+
+        <div id="resultsHeader" class="results-header" hidden>
+          <span id="totalCount" class="total-count"></span>
+          <div id="confidenceWrap" class="confidence-wrap">
+            <span class="confidence-label">Confiança da busca</span>
+            <div class="confidence-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="confidenceBar">
+              <div class="confidence-fill" id="confidenceFill"></div>
+            </div>
+            <span id="confidenceValue" class="confidence-value"></span>
+          </div>
+        </div>
+
+        <div id="resultsGrid" class="results-grid" role="list"></div>
+
+        <div id="pagination" class="pagination" hidden>
+          <button id="btnPrev" class="page-btn" type="button" disabled>← Anterior</button>
+          <span id="pageInfo" class="page-info"></span>
+          <button id="btnNext" class="page-btn" type="button" disabled>Próxima →</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Dados: <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> · Implementação com PRD</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

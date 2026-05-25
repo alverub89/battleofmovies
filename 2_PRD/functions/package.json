@@ -1,0 +1,9 @@
+{
+  "name": "battleofmovies-2-prd-functions",
+  "version": "1.0.0",
+  "description": "Netlify Functions para a implementação 02 · PRD — Busca Inteligente de Filmes",
+  "private": true,
+  "dependencies": {
+    "pg": "^8.13.3"
+  }
+}
