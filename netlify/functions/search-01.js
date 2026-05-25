@@ -139,13 +139,14 @@ async function searchMovies({ genres, yearRange, keyword }) {
     conditions.push(`start_year <= $${params.length}`);
   }
 
-  // Trigram search em títulos
+  // Trigram search em títulos (evita unnest em subquery correlacionada)
   if (keyword) {
     params.push(keyword);
     const idx = params.length;
     conditions.push(
       `(similarity(primary_title, $${idx}) > 0.15 OR ` +
-      `EXISTS (SELECT 1 FROM unnest(pt_titles) t WHERE similarity(t, $${idx}) > 0.15))`
+      `similarity(original_title, $${idx}) > 0.15 OR ` +
+      `similarity(array_to_string(pt_titles, ' '), $${idx}) > 0.1)`
     );
   }
 
@@ -228,6 +229,14 @@ exports.handler = async (event) => {
     };
   }
 
+  if (!process.env.DATA_URL) {
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Variável de ambiente DATA_URL não configurada." }),
+    };
+  }
+
   try {
     const genres = extractGenres(q);
     const yearRange = extractYearRange(q);
@@ -267,7 +276,10 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: "Erro interno ao buscar filmes." }),
+      body: JSON.stringify({
+        error: "Erro interno ao buscar filmes.",
+        detail: err.message,
+      }),
     };
   }
 };
