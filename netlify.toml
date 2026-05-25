@@ -1,13 +1,6 @@
 [build]
   publish = "build"
-  command = "npm --prefix 1_sem_espec/functions install && mkdir -p build/01-sem-espec && cp 1_sem_espec/index.html 1_sem_espec/style.css 1_sem_espec/app.js build/01-sem-espec/ && mkdir -p build/2_PRD && cp 2_PRD/index.html 2_PRD/style.css 2_PRD/app.js build/2_PRD/"
-
-# --- functions por implementação (cada pasta tem suas próprias functions) ---
-[[functions]]
-  directory = "1_sem_espec/functions"
-
-[[functions]]
-  directory = "2_PRD/functions"
+  command = "mkdir -p netlify/functions && cp 1_sem_espec/functions/search-01.js 2_PRD/functions/search-02.js netlify/functions/ && cp 1_sem_espec/functions/package.json netlify/functions/ && npm --prefix netlify/functions install && mkdir -p build/01-sem-espec && cp 1_sem_espec/index.html 1_sem_espec/style.css 1_sem_espec/app.js build/01-sem-espec/ && mkdir -p build/2_PRD && cp 2_PRD/index.html 2_PRD/style.css 2_PRD/app.js build/2_PRD/"
 
 # --- 01-sem-espec ---
 [[redirects]]

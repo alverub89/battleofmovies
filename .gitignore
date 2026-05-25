@@ -18,6 +18,7 @@ _data/title.akas.tsv/
 
 # Node
 node_modules/
+netlify/
 
 # Env files
 .env
