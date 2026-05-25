@@ -1,6 +1,7 @@
 [build]
   publish = "."
   functions = "netlify/functions"
+  command = ""
 
 # --- 01-sem-espec ---
 [[redirects]]
