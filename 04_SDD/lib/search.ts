@@ -36,69 +36,89 @@ export async function executeSearch(
 ): Promise<SearchRawResult> {
   const { genres, yearFrom, yearTo, requiredTerms } = parsed;
 
-  const params: unknown[] = [];
-  const whereClauses: string[] = [
+  const baseClauses = [
     'average_rating IS NOT NULL',
     'num_votes >= 1000',
   ];
 
-  // $1 — query bruta para word_similarity (sempre o primeiro parâmetro)
-  params.push(rawQuery);
-  const rawIdx = params.length; // 1
+  // Parâmetros de filtro compartilhados (sem rawQuery, sem limit/offset).
+  // dataParams  = [rawQuery, ...filterParams, limit, offset]
+  // countParams = [...filterParams]
+  // Dessa forma, o COUNT nunca recebe parâmetros não referenciados.
+  const filterParams: unknown[] = [];
+  const dataFilterClauses: string[] = [];   // índices: $2 em diante (rawQuery ocupa $1)
+  const countFilterClauses: string[] = [];  // índices: $1 em diante
 
-  // Filtro por gênero (operador de interseção de arrays, usa índice GIN)
+  // Filtro por gênero
   if (genres.length > 0) {
-    params.push(genres);
-    whereClauses.push(`genres && $${params.length}::text[]`);
+    filterParams.push(genres);
+    const fi = filterParams.length;
+    dataFilterClauses.push(`genres && $${1 + fi}::text[]`);   // $2, $3, …
+    countFilterClauses.push(`genres && $${fi}::text[]`);      // $1, $2, …
   }
 
   // Filtro por faixa de ano
   if (yearFrom !== null) {
-    params.push(yearFrom);
-    whereClauses.push(`start_year >= $${params.length}`);
+    filterParams.push(yearFrom);
+    const fi = filterParams.length;
+    dataFilterClauses.push(`start_year >= $${1 + fi}`);
+    countFilterClauses.push(`start_year >= $${fi}`);
   }
   if (yearTo !== null) {
-    params.push(yearTo);
-    whereClauses.push(`start_year <= $${params.length}`);
+    filterParams.push(yearTo);
+    const fi = filterParams.length;
+    dataFilterClauses.push(`start_year <= $${1 + fi}`);
+    countFilterClauses.push(`start_year <= $${fi}`);
   }
 
-  // Filtro por termos obrigatórios (nomes próprios / palavras capitalizadas)
+  // Filtro por termos obrigatórios
   if (requiredTerms.length > 0) {
-    const termStr = requiredTerms.join(' ');
-    params.push(termStr);
-    const termIdx = params.length;
-    whereClauses.push(
-      `(word_similarity($${termIdx}, primary_title) > 0.2`
-      + ` OR word_similarity($${termIdx}, original_title) > 0.2`
+    filterParams.push(requiredTerms.join(' '));
+    const fi = filterParams.length;
+    const dIdx = 1 + fi;
+    const cIdx = fi;
+    dataFilterClauses.push(
+      `(word_similarity($${dIdx}, primary_title) > 0.2`
+      + ` OR word_similarity($${dIdx}, original_title) > 0.2`
       + ` OR EXISTS (`
       + `   SELECT 1 FROM UNNEST(pt_titles) AS _pt`
-      + `   WHERE word_similarity($${termIdx}, _pt) > 0.2`
+      + `   WHERE word_similarity($${dIdx}, _pt) > 0.2`
+      + ` ))`,
+    );
+    countFilterClauses.push(
+      `(word_similarity($${cIdx}, primary_title) > 0.2`
+      + ` OR word_similarity($${cIdx}, original_title) > 0.2`
+      + ` OR EXISTS (`
+      + `   SELECT 1 FROM UNNEST(pt_titles) AS _pt`
+      + `   WHERE word_similarity($${cIdx}, _pt) > 0.2`
       + ` ))`,
     );
   }
 
-  const whereSQL = whereClauses.join('\n    AND ');
+  const dataWhere  = [...baseClauses, ...dataFilterClauses].join('\n    AND ');
+  const countWhere = [...baseClauses, ...countFilterClauses].join('\n    AND ');
 
-  // Expressão de score semântico: maior similaridade entre a query e
-  // primary_title, original_title e qualquer título em português (pt_titles).
+  // Expressão de score semântico: $1 = rawQuery (só no data query)
   const semExpr = `GREATEST(
-        word_similarity($${rawIdx}, primary_title),
-        word_similarity($${rawIdx}, original_title),
+        word_similarity($1, primary_title),
+        word_similarity($1, original_title),
         COALESCE(
-          (SELECT MAX(word_similarity($${rawIdx}, _pt))
+          (SELECT MAX(word_similarity($1, _pt))
            FROM UNNEST(pt_titles) AS _pt),
           0.0
         )
       )`;
 
-  // Parâmetros de paginação (sempre os últimos)
-  params.push(limit);
-  const limitIdx = params.length;
-  params.push((page - 1) * limit);
-  const offsetIdx = params.length;
+  // Montar arrays finais de parâmetros
+  const limitVal  = limit;
+  const offsetVal = (page - 1) * limit;
+  const limitIdx  = 1 + 1 + filterParams.length;     // rawQuery ($1) + filterParams + limit
+  const offsetIdx = limitIdx + 1;
+
+  const dataParams:  unknown[] = [rawQuery, ...filterParams, limitVal, offsetVal];
+  const countParams: unknown[] = [...filterParams];
 
   // CTE: calcula semantic_score uma vez por linha
-  // ORDER BY: combina semântica (70%) + qualidade (30%)
   const dataSql = `
     WITH scored AS (
       SELECT
@@ -112,7 +132,7 @@ export async function executeSearch(
         quality_score                 AS "qualityScore",
         ROUND((${semExpr})::numeric, 4) AS "semanticScore"
       FROM movies_search
-      WHERE ${whereSQL}
+      WHERE ${dataWhere}
     )
     SELECT *
     FROM scored
@@ -122,18 +142,16 @@ export async function executeSearch(
     LIMIT $${limitIdx} OFFSET $${offsetIdx}
   `;
 
-  // COUNT usa os mesmos WHERE clauses mas sem LIMIT/OFFSET
-  const countParams = params.slice(0, params.length - 2);
   const countSql = `
     SELECT COUNT(*) AS total
     FROM movies_search
-    WHERE ${whereSQL}
+    WHERE ${countWhere}
   `;
 
   const client = await pool.connect();
   try {
     const [dataResult, countResult] = await Promise.all([
-      client.query<SearchRawRow>(dataSql, params),
+      client.query<SearchRawRow>(dataSql, dataParams),
       client.query<{ total: string }>(countSql, countParams),
     ]);
 
