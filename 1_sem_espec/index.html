@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Battle of Movies — Busca sem Spec</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-inner">
+        <span class="logo">🎬 Battle of Movies</span>
+        <span class="badge">01 · Sem Spec</span>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="hero">
+        <h1 class="hero-title">Busca inteligente de filmes</h1>
+        <p class="hero-sub">
+          Descreva o que quer assistir em português — sem filtros, sem menus, só palavras.
+        </p>
+
+        <form class="search-form" id="searchForm" role="search" autocomplete="off">
+          <div class="search-wrap">
+            <input
+              class="search-input"
+              id="searchInput"
+              type="search"
+              name="q"
+              placeholder="Ex: filme de terror psicológico dos anos 90…"
+              maxlength="300"
+              aria-label="Buscar filmes"
+              spellcheck="false"
+            />
+            <button class="search-btn" type="submit" aria-label="Buscar">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+          </div>
+          <div class="suggestions" id="suggestions" aria-label="Sugestões de busca">
+            <button class="chip" type="button" data-q="terror psicológico anos 90">terror psicológico anos 90</button>
+            <button class="chip" type="button" data-q="comédia romântica anos 2000">comédia romântica anos 2000</button>
+            <button class="chip" type="button" data-q="ficção científica espacial">ficção científica espacial</button>
+            <button class="chip" type="button" data-q="animação infantil disney">animação infantil</button>
+            <button class="chip" type="button" data-q="drama guerra anos 40">drama de guerra anos 40</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="results-section" id="resultsSection" aria-live="polite">
+        <div id="loadingState" class="state state--loading" hidden>
+          <div class="spinner" role="status">
+            <span class="sr-only">Buscando filmes…</span>
+          </div>
+          <p>Buscando filmes…</p>
+        </div>
+
+        <div id="emptyState" class="state state--empty" hidden>
+          <span class="state-icon">🎭</span>
+          <p>Nenhum filme encontrado para essa busca.</p>
+          <p class="state-hint">Tente palavras diferentes, como "ação anos 80" ou "comédia romântica".</p>
+        </div>
+
+        <div id="errorState" class="state state--error" hidden>
+          <span class="state-icon">⚠️</span>
+          <p id="errorMsg">Ocorreu um erro ao buscar filmes.</p>
+        </div>
+
+        <div id="parsedInfo" class="parsed-info" hidden></div>
+
+        <div id="resultsGrid" class="results-grid" role="list"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Dados: <a href="https://www.imdb.com" target="_blank" rel="noopener">IMDb</a> · Implementação sem especificação</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

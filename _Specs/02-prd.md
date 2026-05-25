@@ -66,6 +66,7 @@ Lista paginada de filmes com: título principal (`primaryTitle`), ano (`startYea
 
 ## 7. Restrições técnicas
 
-- Dados são locais — base IMDb em arquivos TSV comprimidos na raiz do projeto
+- Dados estão no neon, a variavel de ambiente será a data_url
+- Faça a implementação do pedido abaixo dentro do pasta 2_PRD, considere que utilizaremos netlify, e separe front de back.
 - Sem chamada a API externa para os dados de filmes
 - A interpretação da query pode usar modelo de linguagem externo
