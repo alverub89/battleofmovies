@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS title_basics (
   primary_title   TEXT          NOT NULL,
   original_title  TEXT          NOT NULL,
   start_year      SMALLINT      NULL,
-  runtime_minutes SMALLINT      NULL,
+  runtime_minutes INTEGER       NULL,
   genres          TEXT[]        NULL,
 
   CONSTRAINT pk_title_basics PRIMARY KEY (tconst)

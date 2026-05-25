@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# IMDb data — baixar localmente, nunca versionar (arquivos muito grandes)
+_data/title.basics.tsv/
+_data/title.ratings.tsv/
+_data/title.akas.tsv/
+
+# Node
+node_modules/
+
+# Env files
+.env
+.env.local
+.env.*.local
