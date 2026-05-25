@@ -313,11 +313,11 @@ exports.handler = async function handler(event) {
     const SQL_FILTER = `
       FROM title_basics b
       INNER JOIN title_ratings r ON b.tconst = r.tconst
-      WHERE r.num_votes          >= $1
-        AND ($2::text[]  IS NULL OR b.genres      && $2::text[])
-        AND ($3          IS NULL OR b.start_year  >= CAST($3 AS smallint))
-        AND ($4          IS NULL OR b.start_year  <= CAST($4 AS smallint))
-        AND ($5          IS NULL OR r.average_rating >= CAST($5 AS numeric))
+      WHERE r.num_votes             >= $1
+        AND ($2::text[]   IS NULL OR b.genres        && $2::text[])
+        AND ($3::int      IS NULL OR b.start_year    >= $3::int)
+        AND ($4::int      IS NULL OR b.start_year    <= $4::int)
+        AND ($5::numeric  IS NULL OR r.average_rating >= $5::numeric)
     `;
 
     const baseParams = [minVotes, genres, startYear, endYear, minRating];
