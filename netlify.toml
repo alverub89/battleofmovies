@@ -1,6 +1,6 @@
 [build]
   publish = "build"
-  command = "mkdir -p netlify/functions && cp 1_sem_espec/functions/search-01.js 2_PRD/functions/search-02.js 3_BDD/functions/search-03.js netlify/functions/ && cp 3_BDD/functions/package.json netlify/functions/ && npm --prefix netlify/functions install && mkdir -p build/01-sem-espec && cp 1_sem_espec/index.html 1_sem_espec/style.css 1_sem_espec/app.js build/01-sem-espec/ && mkdir -p build/2_PRD && cp 2_PRD/index.html 2_PRD/style.css 2_PRD/app.js build/2_PRD/ && mkdir -p build/3_BDD && cp 3_BDD/index.html 3_BDD/style.css 3_BDD/app.js build/3_BDD/ && npm --prefix 04_SDD install --production=false && npm --prefix 04_SDD run build && cp 04_SDD/.dist/search.js netlify/functions/search-04.js && cp 04_SDD/.dist/health.js netlify/functions/health-04.js && mkdir -p build/4_SDD && cp 04_SDD/index.html 04_SDD/style.css 04_SDD/app.js build/4_SDD/"
+  command = "mkdir -p netlify/functions && cp 1_sem_espec/functions/search-01.js 2_PRD/functions/search-02.js 3_BDD/functions/search-03.js netlify/functions/ && cp 3_BDD/functions/package.json netlify/functions/ && npm --prefix netlify/functions install && mkdir -p build/01-sem-espec && cp 1_sem_espec/index.html 1_sem_espec/style.css 1_sem_espec/app.js build/01-sem-espec/ && mkdir -p build/2_PRD && cp 2_PRD/index.html 2_PRD/style.css 2_PRD/app.js build/2_PRD/ && mkdir -p build/3_BDD && cp 3_BDD/index.html 3_BDD/style.css 3_BDD/app.js build/3_BDD/ && npm --prefix 04_SDD install --production=false && npm --prefix 04_SDD run build && cp 04_SDD/.dist/search.js netlify/functions/search-04.js && cp 04_SDD/.dist/health.js netlify/functions/health-04.js && mkdir -p build/4_SDD && cp 04_SDD/index.html 04_SDD/style.css 04_SDD/app.js build/4_SDD/ && cp '5_Context Pack/functions/search-05.js' '5_Context Pack/functions/health-05.js' netlify/functions/ && mkdir -p 'build/5_context-pack' && cp '5_Context Pack/index.html' '5_Context Pack/style.css' '5_Context Pack/app.js' 'build/5_context-pack/'"
 
 # --- 01-sem-espec ---
 [[redirects]]
@@ -29,6 +29,18 @@
 [[redirects]]
   from   = "/4_SDD/health"
   to     = "/.netlify/functions/health-04"
+  status = 200
+
+# --- 05-context-pack ---
+# health must be matched before the broader /api/search redirect
+[[redirects]]
+  from   = "/5_context-pack/api/search/health"
+  to     = "/.netlify/functions/health-05"
+  status = 200
+
+[[redirects]]
+  from   = "/5_context-pack/api/search"
+  to     = "/.netlify/functions/search-05"
   status = 200
 
 [[headers]]

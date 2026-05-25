@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Battle of Movies — Busca Inteligente</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="." class="logo">
+        <span class="logo-icon">🎬</span>
+        <span class="logo-text">Battle of Movies</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1 class="hero-title">O que você quer assistir hoje?</h1>
+      <p class="hero-subtitle">
+        Descreva em linguagem natural — gênero, época, sentimento ou estilo.
+        Encontraremos os melhores filmes para você.
+      </p>
+
+      <form id="search-form" class="search-form" role="search">
+        <div class="search-input-wrapper">
+          <input
+            id="search-input"
+            type="search"
+            class="search-input"
+            placeholder="Ex: filme de terror dos anos 80, comédia romântica, ficção científica..."
+            autocomplete="off"
+            maxlength="500"
+            aria-label="Buscar filmes"
+          />
+          <button type="submit" class="search-btn" aria-label="Buscar">
+            <span class="search-btn-text">Buscar</span>
+            <span class="search-btn-icon" aria-hidden="true">→</span>
+          </button>
+        </div>
+
+        <div class="search-examples">
+          <span class="examples-label">Tente:</span>
+          <button type="button" class="example-chip" data-q="filmes de terror dos anos 80">terror anos 80</button>
+          <button type="button" class="example-chip" data-q="comédia romântica">comédia romântica</button>
+          <button type="button" class="example-chip" data-q="ficção científica futurista">sci-fi futurista</button>
+          <button type="button" class="example-chip" data-q="filme de guerra emocionante">guerra emocionante</button>
+          <button type="button" class="example-chip" data-q="animação infantil família">animação família</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="results-section" class="results-section" aria-live="polite">
+      <div id="state-idle" class="state-idle">
+        <div class="idle-illustration" aria-hidden="true">🎥</div>
+        <p class="idle-text">Digite sua busca acima para encontrar filmes</p>
+      </div>
+
+      <div id="state-loading" class="state-loading" hidden>
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Buscando filmes...</p>
+      </div>
+
+      <div id="state-error" class="state-error" hidden>
+        <div class="error-icon" aria-hidden="true">⚠️</div>
+        <p id="error-message">Ocorreu um erro. Tente novamente.</p>
+      </div>
+
+      <div id="state-results" hidden>
+        <div class="results-meta">
+          <div class="results-info">
+            <span id="results-count" class="results-count"></span>
+            <span id="results-query" class="results-query"></span>
+          </div>
+          <div id="confidence-badge" class="confidence-badge" hidden>
+            <span class="confidence-icon">⚡</span>
+            <span id="confidence-text"></span>
+          </div>
+        </div>
+
+        <div id="low-confidence-warning" class="low-confidence-warning" hidden>
+          <span>🔍</span>
+          <span>Sua busca foi muito genérica. Os resultados são baseados nos filmes mais bem avaliados.</span>
+        </div>
+
+        <ul id="results-grid" class="results-grid" role="list"></ul>
+
+        <nav id="pagination" class="pagination" aria-label="Paginação" hidden>
+          <button id="btn-prev" class="page-btn" disabled>← Anterior</button>
+          <span id="page-info" class="page-info"></span>
+          <button id="btn-next" class="page-btn">Próximo →</button>
+        </nav>
+      </div>
+
+      <div id="state-empty" class="state-empty" hidden>
+        <div class="empty-icon" aria-hidden="true">🎭</div>
+        <p class="empty-title">Nenhum filme encontrado</p>
+        <p class="empty-subtitle">Tente usar termos mais gerais como "drama", "ação" ou "comédia".</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Dados fornecidos por <a href="https://www.imdb.com" target="_blank" rel="noopener noreferrer">IMDb</a> via Neon PostgreSQL</p>
+    </div>
+  </footer>
+
+  <template id="movie-card-template">
+    <li class="movie-card" role="listitem">
+      <div class="movie-card-header">
+        <h2 class="movie-title"></h2>
+        <div class="movie-year-runtime">
+          <span class="movie-year"></span>
+          <span class="movie-runtime"></span>
+        </div>
+      </div>
+      <div class="movie-genres"></div>
+      <div class="movie-card-footer">
+        <div class="movie-rating">
+          <span class="rating-star" aria-hidden="true">★</span>
+          <span class="rating-value"></span>
+          <span class="rating-votes"></span>
+        </div>
+        <div class="movie-relevance">
+          <span class="relevance-label">relevância</span>
+          <div class="relevance-bar">
+            <div class="relevance-fill"></div>
+          </div>
+        </div>
+      </div>
+    </li>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
